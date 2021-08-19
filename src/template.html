@@ -1,14 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
 
-    <title><%= htmlWebpackPlugin.options.title %></title>
-  </head>
+    <title>
+        <%= htmlWebpackPlugin.options.title %>
+    </title>
+    <style>
+        body {
+            margin: 0;
+            width: 100vw;
+        }
+        
+        #root {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            align-self: center;
+            height: 100vh;
+        }
+        
+        h1 {
+            margin: auto;
+            text-align: center;
+            max-width: 90vw;
+        }
+    </style>
+</head>
 
-  <body>
-    <div id="root"></div>
-  </body>
+<body>
+</body>
+
 </html>
