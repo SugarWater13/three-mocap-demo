@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader'
+import pairs from './pairs'
 
 const clock = new THREE.Clock()
 
@@ -10,6 +11,8 @@ let mixer, skeletonHelper
 init()
 animate()
 
+console.log({ pairs })
+
 function onProgress(...progress) {
     console.info({ progress })
 }
@@ -18,21 +21,40 @@ function onError(error) {
     console.warn({ error })
 }
 
-const loader = new BVHLoader()
-loader.load('assets/bvh/01/01_01.bvh', function(result) {
-    skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0])
-    skeletonHelper.skeleton = result.skeleton // allow animation mixer to bind to THREE.SkeletonHelper directly
+document.addEventListener('keyup', (event) => {
+    console.log({ event })
+    if (event.code === 'Space') {
+        loadRandomAnimation()
+    }
+})
 
-    const boneContainer = new THREE.Group()
-    boneContainer.add(result.skeleton.bones[0])
+function loadRandomAnimation() {
+    const index = Math.floor(Math.random() * pairs.length)
+    const [key, description] = pairs[index]
+    const asset = `assets/everything/${key}.bvh`
 
-    scene.add(skeletonHelper)
-    scene.add(boneContainer)
+    console.log({ key, description })
 
-    // play animation
-    mixer = new THREE.AnimationMixer(skeletonHelper)
-    mixer.clipAction(result.clip).setEffectiveWeight(1.0).play()
-}, onProgress, onError)
+    const loader = new BVHLoader()
+    loader.load(asset, function(result) {
+        skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0])
+        skeletonHelper.skeleton = result.skeleton // allow animation mixer to bind to THREE.SkeletonHelper directly
+
+        const boneContainer = new THREE.Group()
+        boneContainer.add(result.skeleton.bones[0])
+
+        scene.add(skeletonHelper)
+        scene.add(boneContainer)
+
+        // play animation
+        // play animation
+        mixer = new THREE.AnimationMixer(skeletonHelper);
+        mixer.clipAction(result.clip).setEffectiveWeight(1.0).play();
+    }, onProgress, onError)
+    console.log({ key, description })
+}
+
+
 
 function init() {
     camera = new THREE.PerspectiveCamera(
