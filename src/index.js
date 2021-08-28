@@ -10,8 +10,16 @@ let mixer, skeletonHelper
 init()
 animate()
 
+function onProgress(...progress) {
+    console.info({ progress })
+}
+
+function onError(error) {
+    console.warn({ error })
+}
+
 const loader = new BVHLoader()
-loader.load('bvh/01/01_01.bvh', function(result) {
+loader.load('assets/bvh/01/01_01.bvh', function(result) {
     skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0])
     skeletonHelper.skeleton = result.skeleton // allow animation mixer to bind to THREE.SkeletonHelper directly
 
@@ -24,7 +32,7 @@ loader.load('bvh/01/01_01.bvh', function(result) {
     // play animation
     mixer = new THREE.AnimationMixer(skeletonHelper)
     mixer.clipAction(result.clip).setEffectiveWeight(1.0).play()
-})
+}, onProgress, onError)
 
 function init() {
     camera = new THREE.PerspectiveCamera(
