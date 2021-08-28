@@ -1,59 +1,40 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader'
-import pairs from './pairs'
+import { loadRandomSkeleton } from './skeleton'
 
 const clock = new THREE.Clock()
 
 let camera, controls, scene, renderer
-let mixer, skeletonHelper
+
+let figs = []
 
 init()
 animate()
 
-console.log({ pairs })
-
-function onProgress(...progress) {
-    console.info({ progress })
-}
-
-function onError(error) {
-    console.warn({ error })
-}
-
 document.addEventListener('keyup', (event) => {
     console.log({ event })
     if (event.code === 'Space') {
-        loadRandomAnimation()
+        loadRandomSkeleton().then(
+            (fig) => {
+
+                scene.add(fig.skeletonHelper);
+                scene.add(fig.boneContainer);
+                figs.push(fig)
+
+                if (figs.length > 5) {
+                    const old = figs.slice(0, -5)
+                    const next = figs.slice(-5, -1)
+                    old.forEach((fig) => {
+                        scene.remove(fig.skeletonHelper)
+                        scene.remove(fig.boneContainer)
+                    })
+                    figs = next
+                }
+            },
+            console.error,
+        )
     }
 })
-
-function loadRandomAnimation() {
-    const index = Math.floor(Math.random() * pairs.length)
-    const [key, description] = pairs[index]
-    const asset = `assets/everything/${key}.bvh`
-
-    console.log({ key, description })
-
-    const loader = new BVHLoader()
-    loader.load(asset, function(result) {
-        skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0])
-        skeletonHelper.skeleton = result.skeleton // allow animation mixer to bind to THREE.SkeletonHelper directly
-
-        const boneContainer = new THREE.Group()
-        boneContainer.add(result.skeleton.bones[0])
-
-        scene.add(skeletonHelper)
-        scene.add(boneContainer)
-
-        // play animation
-        // play animation
-        mixer = new THREE.AnimationMixer(skeletonHelper);
-        mixer.clipAction(result.clip).setEffectiveWeight(1.0).play();
-    }, onProgress, onError)
-    console.log({ key, description })
-}
-
 
 
 function init() {
@@ -76,15 +57,16 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
 
-    controls = new OrbitControls(camera, renderer.domElement)
-    controls.minDistance = 300
-    controls.maxDistance = 700
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.minDistance = 300;
+    controls.maxDistance = 700;
 
-    window.addEventListener('resize', onWindowResize)
+    window.addEventListener('resize', onWindowResize);
 }
 
+
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight
+    camera.aspect = window.innerWidth / window.innerHeightscene
     camera.updateProjectionMatrix()
 
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -95,7 +77,9 @@ function animate() {
 
     const delta = clock.getDelta()
 
-    if (mixer) mixer.update(delta)
+    figs.forEach((fig) => {
+        fig.mixer.update(delta)
+    })
 
     renderer.render(scene, camera)
 }
